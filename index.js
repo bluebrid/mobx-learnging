@@ -1,7 +1,7 @@
 
-const addBtn = document.getElementById('add');
-const minusBtn = document.getElementById('minus');
-const incomeLabel = document.getElementById('incomeLabel');
+const addBtn = document.getElementById('add')
+const minusBtn = document.getElementById('minus')
+const incomeLabel = document.getElementById('incomeLabel')
 const bankUser = mobx.observable({
     name: 'Ivan Fan',
     income: 3,
@@ -10,14 +10,22 @@ const bankUser = mobx.observable({
 
 const incomeDisposer = mobx.autorun(() => {
     incomeLabel.innerText = `Ivan Fan income is ${bankUser.income}`
-});
+    throw new Error('throw new error')
+}, {
+    name: 'income',
+    delay: 2*1000,
+    onError: (e) => {
+        console.log(e)
+    }
+})
 
 addBtn.addEventListener('click', ()=> {
-    bankUser.income ++;
+    bankUser.income ++
 })
 minusBtn.addEventListener('click', () => {
-    bankUser.income --;
+    bankUser.income --
 })
+
 
 // var incomeDisposer = mobx.autorun(() => {
 //     console.log('张三的aaaaa账户存款:', bankUser.name);
