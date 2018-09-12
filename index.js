@@ -9,8 +9,11 @@ const bankUser = mobx.observable({
 });
 
 const incomeDisposer = mobx.autorun(() => {
-    incomeLabel.innerText = `Ivan Fan income is ${bankUser.income}`
-    throw new Error('throw new error')
+    if (bankUser.income < 0) {
+        bankUser.income = 0
+        throw new Error('throw new error')
+    } 
+    incomeLabel.innerText = `Ivan Fan income is ${bankUser.income}`   
 }, {
     name: 'income',
     delay: 2*1000,
@@ -25,6 +28,8 @@ addBtn.addEventListener('click', ()=> {
 minusBtn.addEventListener('click', () => {
     bankUser.income --
 })
+
+
 
 
 // var incomeDisposer = mobx.autorun(() => {
