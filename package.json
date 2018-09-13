@@ -1,0 +1,57 @@
+{
+  "name": "mobx-learnging",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "react-scripts": "^1.1.4",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.3",
+    "babel-jest": "^22.4.3",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "eslint-config-react-app": "^2.1.0",
+    "eslint-plugin-flowtype": "^2.46.2",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.7.0",
+    "glob": "^7.1.1",
+    "jest": "^22.4.3",
+    "prettier": "^1.12.1",
+    "rimraf": "^2.6.2"
+  },
+  "dependencies": {
+    "classnames": "^2.2.6",
+    "humps": "^2.0.0",
+    "lodash": "^4.17.5",
+    "normalizr": "^3.2.4",
+    "prop-types": "^15.6.1",
+    "react": "^16.3.1",
+    "react-dom": "^16.3.1",
+    "react-lifecycles-compat": "^3.0.4",
+    "react-router-dom": "^4.1.2",
+    "symbol-observable": "^1.2.0",
+    "todomvc-app-css": "^2.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject",
+    "test": "react-scripts test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluebrid/mobx-learnging.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bluebrid/mobx-learnging/issues"
+  },
+  "homepage": "https://github.com/bluebrid/mobx-learnging#readme"
+}
