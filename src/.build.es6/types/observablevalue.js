@@ -17,7 +17,6 @@ export class ObservableValue extends Atom {
         return value;
     }
     set(newValue) {
-        debugger
         const oldValue = this.value;
         newValue = this.prepareNewValue(newValue);
         if (newValue !== UNCHANGED) {
@@ -54,6 +53,7 @@ export class ObservableValue extends Atom {
     setNewValue(newValue) {
         const oldValue = this.value;
         this.value = newValue;
+        debugger
         this.reportChanged();
         if (hasListeners(this)) {
             notifyListeners(this, {

@@ -7,6 +7,7 @@ export function getObservers(observable) {
 }
 
 export function addObserver(observable, node) {
+    debugger
     observable.observers.add(node);
     if (observable.lowestObserverState > node.dependenciesState)
         observable.lowestObserverState = node.dependenciesState;
@@ -52,11 +53,12 @@ export function endBatch() {
 }
 export function reportObserved(observable) {
     const derivation = globalState.trackingDerivation;
+    debugger
     // console.log(globalState)
     if (derivation !== null) {
         if (derivation.runId !== observable.lastAccessedBy) {
             observable.lastAccessedBy = derivation.runId;
-            debugger
+            
             derivation.newObserving[derivation.unboundDepsCount++] = observable;
             if (!observable.isBeingObserved) {
                 observable.isBeingObserved = true;

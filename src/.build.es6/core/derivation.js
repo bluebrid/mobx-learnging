@@ -126,7 +126,7 @@ export function trackDerivedFunction(derivation, f, context) {
     derivation.runId = ++globalState.runId;
     const prevTracking = globalState.trackingDerivation;
     // console.log(globalState)
-    // debugger
+    // 每次运行autorun 方法，首先都会清空trackingDerivation
     globalState.trackingDerivation = derivation;
     let result;
     if (globalState.disableErrorBoundaries === true) {
@@ -134,14 +134,32 @@ export function trackDerivedFunction(derivation, f, context) {
     }
     else {
         try {
+            // 1,调用外部的传入的autorun 方法，如果改方法中引用了observable 对象的几个属性，就会触发objectProxyTraps 中的get 方法几次
+            /**
+             * const incomeDisposer = autorun(f(reaction) => {
+                incomeLabel.innerText = `${bankUser.name} income is ${bankUser.income}`
+              })
+             */
+            // 2, get 方法，就会调用这个reportObserved方法，相当于是要上报这个属性要被某个指定的autorun 方法观察。
+            // 3, 会将 被观察的对象保存到globalState.trackingDerivation 中 derivation.newObserving[derivation.unboundDepsCount++] = observable; 
+            // 4, 
             result = f.call(context);
         }
         catch (e) {
             result = new CaughtException(e);
         }
     }
-    debugger
     globalState.trackingDerivation = prevTracking;
+    // 运行  result = f.call(context); 后， 已经将对应的autorun 要监听的对象(属性) 都放在derivation中
+    // 在bindDependencies 方法，会遍历derivation.newObserving 然后调用addObserver(dep, derivation); 去添加监听
+    /**
+     * export function addObserver(observable, node) {
+        debugger
+        observable.observers.add(node);
+        if (observable.lowestObserverState > node.dependenciesState)
+            observable.lowestObserverState = node.dependenciesState;
+    }
+     */
     bindDependencies(derivation);
     return result;
 }

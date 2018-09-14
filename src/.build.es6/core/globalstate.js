@@ -130,6 +130,7 @@ export function getGlobalState() {
  * but can be used to get back at a stable state after throwing errors
  */
 export function resetGlobalState() {
+    debugger
     const defaultGlobals = new MobXGlobals();
     for (let key in defaultGlobals)
         if (persistentKeys.indexOf(key) === -1)

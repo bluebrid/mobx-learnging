@@ -24,7 +24,6 @@ export class Reaction {
         if (!this._isScheduled) {
             this._isScheduled = true;
             globalState.pendingReactions.push(this);
-            console.log(globalState.pendingReactions)
             runReactions();
         }
     }
@@ -95,7 +94,6 @@ export class Reaction {
         if (globalState.disableErrorBoundaries)
             throw error;
         const message = `[mobx] Encountered an uncaught exception that was thrown by a reaction or observer component, in: '${this}`;
-        console.error(message, error);
         /** If debugging brought you here, please, read the above message :-). Tnx! */
         if (isSpyEnabled()) {
             spyReport({
