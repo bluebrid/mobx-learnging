@@ -90,6 +90,11 @@ const observableFactories = {
         }
         else {
             const defaultDecorator = getDefaultDecoratorFromObjectOptions(o);
+            // base 添加了Atom 类型属性
+            /**
+             * 1.base对象，就是添加了一个Symbol("mobx administration"); 的属性， 类型是一个：ObservableObjectAdministration 对象
+             * 2.
+             */
             const base = extendObservable({}, undefined, undefined, o);
             const proxy = createDynamicObservableObject(base);
             extendObservableObjectWithProperties(proxy, props, decorators, defaultDecorator);

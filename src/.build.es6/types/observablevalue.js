@@ -17,6 +17,7 @@ export class ObservableValue extends Atom {
         return value;
     }
     set(newValue) {
+        debugger
         const oldValue = this.value;
         newValue = this.prepareNewValue(newValue);
         if (newValue !== UNCHANGED) {

@@ -125,6 +125,8 @@ export function trackDerivedFunction(derivation, f, context) {
     derivation.unboundDepsCount = 0;
     derivation.runId = ++globalState.runId;
     const prevTracking = globalState.trackingDerivation;
+    // console.log(globalState)
+    // debugger
     globalState.trackingDerivation = derivation;
     let result;
     if (globalState.disableErrorBoundaries === true) {
@@ -138,6 +140,7 @@ export function trackDerivedFunction(derivation, f, context) {
             result = new CaughtException(e);
         }
     }
+    debugger
     globalState.trackingDerivation = prevTracking;
     bindDependencies(derivation);
     return result;

@@ -5,62 +5,31 @@ export function hasObservers(observable) {
 export function getObservers(observable) {
     return observable.observers;
 }
-// function invariantObservers(observable: IObservable) {
-//     const list = observable.observers
-//     const map = observable.observersIndexes
-//     const l = list.length
-//     for (let i = 0; i < l; i++) {
-//         const id = list[i].__mapid
-//         if (i) {
-//             invariant(map[id] === i, "INTERNAL ERROR maps derivation.__mapid to index in list") // for performance
-//         } else {
-//             invariant(!(id in map), "INTERNAL ERROR observer on index 0 shouldn't be held in map.") // for performance
-//         }
-//     }
-//     invariant(
-//         list.length === 0 || Object.keys(map).length === list.length - 1,
-//         "INTERNAL ERROR there is no junk in map"
-//     )
-// }
+
 export function addObserver(observable, node) {
-    // invariant(node.dependenciesState !== -1, "INTERNAL ERROR, can add only dependenciesState !== -1");
-    // invariant(observable._observers.indexOf(node) === -1, "INTERNAL ERROR add already added node");
-    // invariantObservers(observable);
     observable.observers.add(node);
     if (observable.lowestObserverState > node.dependenciesState)
         observable.lowestObserverState = node.dependenciesState;
-    // invariantObservers(observable);
-    // invariant(observable._observers.indexOf(node) !== -1, "INTERNAL ERROR didn't add node");
 }
 export function removeObserver(observable, node) {
-    // invariant(globalState.inBatch > 0, "INTERNAL ERROR, remove should be called only inside batch");
-    // invariant(observable._observers.indexOf(node) !== -1, "INTERNAL ERROR remove already removed node");
-    // invariantObservers(observable);
     observable.observers.delete(node);
     if (observable.observers.size === 0) {
-        // deleting last observer
         queueForUnobservation(observable);
     }
-    // invariantObservers(observable);
-    // invariant(observable._observers.indexOf(node) === -1, "INTERNAL ERROR remove already removed node2");
 }
 export function queueForUnobservation(observable) {
     if (observable.isPendingUnobservation === false) {
-        // invariant(observable._observers.length === 0, "INTERNAL ERROR, should only queue for unobservation unobserved observables");
         observable.isPendingUnobservation = true;
         globalState.pendingUnobservations.push(observable);
     }
 }
-/**
- * Batch starts a transaction, at least for purposes of memoizing ComputedValues when nothing else does.
- * During a batch `onBecomeUnobserved` will be called at most once per observable.
- * Avoids unnecessary recalculations.
- */
 export function startBatch() {
     globalState.inBatch++;
 }
 export function endBatch() {
     if (--globalState.inBatch === 0) {
+        // debugger
+        // console.log(globalState)
         runReactions();
         // the batch is actually about to finish, all unobserving should happen here.
         const list = globalState.pendingUnobservations;
@@ -74,8 +43,6 @@ export function endBatch() {
                     observable.onBecomeUnobserved();
                 }
                 if (observable instanceof ComputedValue) {
-                    // computed values are automatically teared down when the last observer leaves
-                    // this process happens recursively, this computed might be the last observabe of another, etc..
                     observable.suspend();
                 }
             }
@@ -85,15 +52,11 @@ export function endBatch() {
 }
 export function reportObserved(observable) {
     const derivation = globalState.trackingDerivation;
+    // console.log(globalState)
     if (derivation !== null) {
-        /**
-         * Simple optimization, give each derivation run an unique id (runId)
-         * Check if last time this observable was accessed the same runId is used
-         * if this is the case, the relation is already known
-         */
         if (derivation.runId !== observable.lastAccessedBy) {
             observable.lastAccessedBy = derivation.runId;
-            // Tried storing newObserving, or observing, or both as Set, but performance didn't come close...
+            debugger
             derivation.newObserving[derivation.unboundDepsCount++] = observable;
             if (!observable.isBeingObserved) {
                 observable.isBeingObserved = true;
@@ -107,33 +70,10 @@ export function reportObserved(observable) {
     }
     return false;
 }
-// function invariantLOS(observable: IObservable, msg: string) {
-//     // it's expensive so better not run it in produciton. but temporarily helpful for testing
-//     const min = getObservers(observable).reduce((a, b) => Math.min(a, b.dependenciesState), 2)
-//     if (min >= observable.lowestObserverState) return // <- the only assumption about `lowestObserverState`
-//     throw new Error(
-//         "lowestObserverState is wrong for " +
-//             msg +
-//             " because " +
-//             min +
-//             " < " +
-//             observable.lowestObserverState
-//     )
-// }
-/**
- * NOTE: current propagation mechanism will in case of self reruning autoruns behave unexpectedly
- * It will propagate changes to observers from previous run
- * It's hard or maybe impossible (with reasonable perf) to get it right with current approach
- * Hopefully self reruning autoruns aren't a feature people should depend on
- * Also most basic use cases should be ok
- */
-// Called by Atom when its value changes
 export function propagateChanged(observable) {
-    // invariantLOS(observable, "changed start");
     if (observable.lowestObserverState === IDerivationState.STALE)
         return;
     observable.lowestObserverState = IDerivationState.STALE;
-    // Ideally we use for..of here, but the downcompiled version is really slow...
     observable.observers.forEach(d => {
         if (d.dependenciesState === IDerivationState.UP_TO_DATE) {
             if (d.isTracing !== TraceMode.NONE) {
@@ -143,11 +83,8 @@ export function propagateChanged(observable) {
         }
         d.dependenciesState = IDerivationState.STALE;
     });
-    // invariantLOS(observable, "changed end");
 }
-// Called by ComputedValue when it recalculate and its value changed
 export function propagateChangeConfirmed(observable) {
-    // invariantLOS(observable, "confirmed start");
     if (observable.lowestObserverState === IDerivationState.STALE)
         return;
     observable.lowestObserverState = IDerivationState.STALE;
@@ -158,11 +95,8 @@ export function propagateChangeConfirmed(observable) {
         )
             observable.lowestObserverState = IDerivationState.UP_TO_DATE;
     });
-    // invariantLOS(observable, "confirmed end");
 }
-// Used by computed when its dependency changed, but we don't wan't to immediately recompute.
 export function propagateMaybeChanged(observable) {
-    // invariantLOS(observable, "maybe start");
     if (observable.lowestObserverState !== IDerivationState.UP_TO_DATE)
         return;
     observable.lowestObserverState = IDerivationState.POSSIBLY_STALE;
@@ -175,7 +109,6 @@ export function propagateMaybeChanged(observable) {
             d.onBecomeStale();
         }
     });
-    // invariantLOS(observable, "maybe end");
 }
 function logTraceInfo(derivation, observable) {
     console.log(`[mobx.trace] '${derivation.name}' is invalidated due to a change in: '${observable.name}'`);

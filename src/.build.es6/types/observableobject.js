@@ -83,6 +83,7 @@ export class ObservableObjectAdministration {
                 return;
             newValue = change.newValue;
         }
+        // 
         const observable = new ObservableValue(newValue, enhancer, `${this.name}.${propName}`, false);
         this.values.set(propName, observable);
         newValue = observable.value; // observableValue might have changed it
@@ -209,6 +210,7 @@ export class ObservableObjectAdministration {
     }
 }
 export function asObservableObject(target, name = "", defaultEnhancer = deepEnhancer) {
+    // debugger
     if (Object.prototype.hasOwnProperty.call(target, $mobx))
         return target[$mobx];
     process.env.NODE_ENV !== "production" &&
@@ -218,6 +220,7 @@ export function asObservableObject(target, name = "", defaultEnhancer = deepEnha
     if (!name)
         name = "ObservableObject@" + getNextId();
     const adm = new ObservableObjectAdministration(target, new Map(), name, defaultEnhancer);
+    // 只是给target 添加一个$mobx的属性，其值是一个adm 的类型的值， 而且设置了enumerable: false, 就是不可以遍历
     addHiddenProp(target, $mobx, adm);
     return adm;
 }

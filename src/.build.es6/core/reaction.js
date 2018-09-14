@@ -24,6 +24,7 @@ export class Reaction {
         if (!this._isScheduled) {
             this._isScheduled = true;
             globalState.pendingReactions.push(this);
+            console.log(globalState.pendingReactions)
             runReactions();
         }
     }
@@ -145,7 +146,6 @@ export function onReactionError(handler) {
 const MAX_REACTION_ITERATIONS = 100;
 let reactionScheduler = f => f();
 export function runReactions() {
-    // Trampolining, if runReactions are already running, new reactions will be picked up
     if (globalState.inBatch > 0 || globalState.isRunningReactions)
         return;
     reactionScheduler(runReactionsHelper);
@@ -153,10 +153,7 @@ export function runReactions() {
 function runReactionsHelper() {
     globalState.isRunningReactions = true;
     const allReactions = globalState.pendingReactions;
-    let iterations = 0;
-    // While running reactions, new reactions might be triggered.
-    // Hence we work with two variables and check whether
-    // we converge to no remaining reactions after a while.
+    let iterations = 0;   
     while (allReactions.length > 0) {
         if (++iterations === MAX_REACTION_ITERATIONS) {
             console.error(`Reaction doesn't converge to a stable state after ${MAX_REACTION_ITERATIONS} iterations.` +
