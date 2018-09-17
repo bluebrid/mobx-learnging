@@ -14,17 +14,17 @@ const incomeDisposer = autorun((reaction) => {
 }, {
     name: 'autorun000001'
 })
-// incomeDisposer();
-autorun(() => {
-    console.log('账户存款:', bankUser.income);
-}, {
-    name: 'autorun000002'
-});
-autorun(() => {
-    console.log('账户名称:', bankUser.name);
-}, {
-    name: 'autorun000003'
-});
+// // incomeDisposer();
+// autorun(() => {
+//     console.log('账户存款:', bankUser.income);
+// }, {
+//     name: 'autorun000002'
+// });
+// autorun(() => {
+//     console.log('账户名称:', bankUser.name);
+// }, {
+//     name: 'autorun000003'
+// });
 var nameDisposer = autorun(() => {
     console.log("name:" + bankUser.name)
 }, {

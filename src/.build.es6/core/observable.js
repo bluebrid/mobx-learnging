@@ -52,13 +52,18 @@ export function endBatch() {
     }
 }
 export function reportObserved(observable) {
+    // observable 是一个ObservableValue 实例对象， 是在调用observable 方法时，将每个原始对象的属性装饰生成的一个对象
+    // 是调用被观察对象的某个属性时会调用这个方法
     const derivation = globalState.trackingDerivation;
     debugger
     // console.log(globalState)
     if (derivation !== null) {
         if (derivation.runId !== observable.lastAccessedBy) {
             observable.lastAccessedBy = derivation.runId;
-            
+            // derivation 是一个Reaction(反应)实例对象，是在autorun 方法运行是创建的一个对象
+            // 将observable 赋值给derivation.newObserving，因为Javascript 中对象是一个引用对象，
+            // 所以其实derivation.newObserving 就是引用observable的地址
+            // 这样就将observable 加工的对象和autorun 方法关联起来了
             derivation.newObserving[derivation.unboundDepsCount++] = observable;
             if (!observable.isBeingObserved) {
                 observable.isBeingObserved = true;
