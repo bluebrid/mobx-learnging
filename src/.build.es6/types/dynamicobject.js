@@ -21,12 +21,8 @@ const objectProxyTraps = {
         const adm = getAdm(target);
         const observable = adm.values.get(name);
         if (observable instanceof Atom) {
-            console.log('============')
             return observable.get();
         }
-           
-        // make sure we start listening to future keys
-        // note that we only do this here for optimization
         if (typeof name === "string")
             adm.has(name);
         return target[name];

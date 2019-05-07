@@ -7,7 +7,6 @@ export function getObservers(observable) {
 }
 
 export function addObserver(observable, node) {
-    debugger
     observable.observers.add(node);
     if (observable.lowestObserverState > node.dependenciesState)
         observable.lowestObserverState = node.dependenciesState;

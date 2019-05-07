@@ -110,7 +110,7 @@ export function checkIfStateModificationsAreAllowed(atom) {
             (globalState.enforceActions
                 ? "Since strict-mode is enabled, changing observed observable values outside actions is not allowed. Please wrap the code in an `action` if this change is intended. Tried to modify: "
                 : "Side effects like changing state are not allowed at this point. Are you trying to modify state from, for example, the render function of a React component? Tried to modify: ") +
-                atom.name);
+            atom.name);
 }
 /**
  * Executes the provided function `f` and tracks which observables are being accessed.
@@ -118,12 +118,11 @@ export function checkIfStateModificationsAreAllowed(atom) {
  * as observer of any of the accessed observables.
  */
 export function trackDerivedFunction(derivation, f, context) {
-    // pre allocate array allocation + room for variation in deps
-    // array will be trimmed by bindDependencies
     changeDependenciesStateTo0(derivation);
     derivation.newObserving = new Array(derivation.observing.length + 100);
     derivation.unboundDepsCount = 0;
     derivation.runId = ++globalState.runId;
+    // 这个地方globalState.trackingDerivation 还是一个原始值
     const prevTracking = globalState.trackingDerivation;
     // console.log(globalState)
     // 每次运行autorun 方法，首先都会清空trackingDerivation
@@ -134,15 +133,6 @@ export function trackDerivedFunction(derivation, f, context) {
     }
     else {
         try {
-            // 1,调用外部的传入的autorun 方法，如果改方法中引用了observable 对象的几个属性，就会触发objectProxyTraps 中的get 方法几次
-            /**
-             * const incomeDisposer = autorun(f(reaction) => {
-                incomeLabel.innerText = `${bankUser.name} income is ${bankUser.income}`
-              })
-             */
-            // 2, get 方法，就会调用这个reportObserved方法，相当于是要上报这个属性要被某个指定的autorun 方法观察。
-            // 3, 会将 被观察的对象保存到globalState.trackingDerivation 中 derivation.newObserving[derivation.unboundDepsCount++] = observable; 
-            // 4, 
             result = f.call(context);
         }
         catch (e) {
@@ -150,16 +140,6 @@ export function trackDerivedFunction(derivation, f, context) {
         }
     }
     globalState.trackingDerivation = prevTracking;
-    // 运行  result = f.call(context); 后， 已经将对应的autorun 要监听的对象(属性) 都放在derivation中
-    // 在bindDependencies 方法，会遍历derivation.newObserving 然后调用addObserver(dep, derivation); 去添加监听
-    /**
-     * export function addObserver(observable, node) {
-        debugger
-        observable.observers.add(node);
-        if (observable.lowestObserverState > node.dependenciesState)
-            observable.lowestObserverState = node.dependenciesState;
-    }
-     */
     bindDependencies(derivation);
     return result;
 }
@@ -169,13 +149,9 @@ export function trackDerivedFunction(derivation, f, context) {
  * notify observers that become observed/unobserved
  */
 function bindDependencies(derivation) {
-    // invariant(derivation.dependenciesState !== IDerivationState.NOT_TRACKING, "INTERNAL ERROR bindDependencies expects derivation.dependenciesState !== -1");
     const prevObserving = derivation.observing;
     const observing = (derivation.observing = derivation.newObserving);
     let lowestNewObservingDerivationState = IDerivationState.UP_TO_DATE;
-    // Go through all new observables and check diffValue: (this list can contain duplicates):
-    //   0: first occurrence, change to 1 and keep it
-    //   1: extra occurrence, drop it
     let i0 = 0, l = derivation.unboundDepsCount;
     for (let i = 0; i < l; i++) {
         const dep = observing[i];
@@ -193,9 +169,6 @@ function bindDependencies(derivation) {
     }
     observing.length = i0;
     derivation.newObserving = null; // newObserving shouldn't be needed outside tracking (statement moved down to work around FF bug, see #614)
-    // Go through all old observables and check diffValue: (it is unique after last bindDependencies)
-    //   0: it's not in new observables, unobserve it
-    //   1: it keeps being observed, don't want to notify it. change to 0
     l = prevObserving.length;
     while (l--) {
         const dep = prevObserving[l];
@@ -204,9 +177,6 @@ function bindDependencies(derivation) {
         }
         dep.diffValue = 0;
     }
-    // Go through all new observables and check diffValue: (now it should be unique)
-    //   0: it was set to 0 in last loop. don't need to do anything.
-    //   1: it wasn't observed, let's observe it. set back to 0
     while (i0--) {
         const dep = observing[i0];
         if (dep.diffValue === 1) {
@@ -214,8 +184,6 @@ function bindDependencies(derivation) {
             addObserver(dep, derivation);
         }
     }
-    // Some new observed derivations may become stale during this derivation computation
-    // so they have had no chance to propagate staleness (#916)
     if (lowestNewObservingDerivationState !== IDerivationState.UP_TO_DATE) {
         derivation.dependenciesState = lowestNewObservingDerivationState;
         derivation.onBecomeStale();
